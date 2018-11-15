@@ -2,9 +2,9 @@
 #define ISL_ARGS_H_
 
 /* 
- isl_args.h - v0.0.1
+ isl_args.h - v0.1.0
  public domain library for parsing command line arguments;
- supports integers using strtol, floats using strtod, strings and flags
+ supports integers using IA_STRTOL, floats using IA_STRTOD, strings and flags
 
  author: Ilya Kolbin (iskolbin@gmail.com)
  url: github.com:iskolbin/isl_args.h
@@ -14,6 +14,38 @@
  See end of file for license information.
 */
 
+#ifndef IA_NO_ERRNO
+	#include <errno.h>
+	#define IA_ERRNO errno
+	#define IA_ERANGE ERANGE
+#else
+/* No check at all */
+	#define IA_ERRNO 0
+	#define IA_ERANGE 1
+#endif
+
+#ifndef IA_NO_STDIO
+	#include <stdio.h>
+	#define IA_PRINTF printf
+#else
+	#ifndef IA_PRINTF
+		#error "IA_PRINTF not defined"
+	#endif
+#endif
+
+#ifndef IA_NO_STDLIB
+	#include <stdlib.h>
+	#define IA_STRTOL strtol
+	#define IA_STRTOD strtod
+#else
+	#ifndef IA_STRTOL
+		#error "IA_STRTOL not defined"
+	#endif
+	#ifndef IA_STRTOD
+		#error "IA_STRTOD not defined"
+	#endif
+#endif
+
 #define IA_BEGIN(argc, argv) {\
 		char **args_parse_v = (argv);\
 		int args_parse_unrecognized = 1;\
@@ -22,9 +54,9 @@
 #define IA_INT(longname, shortname, var) \
 	if ( !strcmp( args_parse_v[args_parse_i], longname ) || !strcmp( args_parse_v[args_parse_i], shortname )) {\
 		args_parse_unrecognized = 0;\
-		var = strtol( argv[++args_parse_i], NULL, 10 );\
-		if ( errno == ERANGE ) {\
-			printf( "Bad value for parameter %s or %s\n", longname, shortname );\
+		var = IA_STRTOL( argv[++args_parse_i], NULL, 10 );\
+		if ( IA_ERRNO == IA_ERANGE ) {\
+			IA_PRINTF( "Bad value for parameter %s or %s\n", longname, shortname );\
 			return 1;\
 		}\
 	}
@@ -32,9 +64,9 @@
 #define IA_FLOAT(longname, shortname, var) \
 	if ( !strcmp( args_parse_v[args_parse_i], longname ) || !strcmp( args_parse_v[args_parse_i], shortname )) {\
 		args_parse_unrecognized = 0;\
-		var = strtod( args_parse_v[++args_parse_i], NULL );\
-		if ( errno == ERANGE ) {\
-			printf( "Bad value for parameter %s or %s\n", longname, shortname );\
+		var = IA_STRTOD( args_parse_v[++args_parse_i], NULL );\
+		if ( IA_ERRNO == IA_ERANGE ) {\
+			IA_PRINTF( "Bad value for parameter %s or %s\n", longname, shortname );\
 			return 1;\
 		}\
 	}
@@ -50,7 +82,7 @@
 
 #define IA_END \
 	if ( args_parse_unrecognized ) {\
-		printf( "Unrecognized parameter %s\n", args_parse_v[args_parse_i] );\
+		IA_PRINTF( "Unrecognized parameter %s\n", args_parse_v[args_parse_i] );\
 		return 2;\
 	}\
 }}
