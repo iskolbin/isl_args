@@ -2,7 +2,7 @@
 #define ISL_ARGS_H_
 
 /* 
- isl_args.h - v0.2.1
+ isl_args.h - v0.3.0
  public domain library for parsing command line arguments;
  supports integers using IA_STRTOL, floats using IA_STRTOD, strings and flags
 
@@ -46,16 +46,14 @@
 	#endif
 #endif
 
-#define IA_BEGIN(argc, argv) {\
-		char **args_parse_v = (argv);\
-		int args_parse_unrecognized = 1;\
-		for ( int args_parse_i = 1; args_parse_i < argc; args_parse_i++ ) {
-
-#define IA_HELP(longname, shortname, desc) \
-	if ( !strcmp( args_parse_v[args_parse_i], longname ) || !strcmp( args_parse_v[args_parse_i], shortname )) {\
-		printf( desc );\
-		return 0;\
-	}
+#define IA_BEGIN(argc, argv, helpkey, helpshort, helpmsg) {\
+	char **args_parse_v = (argv);\
+	int args_parse_unrecognized = 1;\
+	for ( int args_parse_i = 0; args_parse_i < argc; args_parse_i++ ) {\
+		if ( argc == 1 || !strcmp( args_parse_v[args_parse_i], helpkey ) || !strcmp( args_parse_v[args_parse_i], helpshort )) {\
+			printf( helpmsg );\
+			return 0;\
+		} else if ( args_parse_i == 0 ) args_parse_i++;
 
 #define IA_INT(longname, shortname, var) \
 	if ( !strcmp( args_parse_v[args_parse_i], longname ) || !strcmp( args_parse_v[args_parse_i], shortname )) {\
